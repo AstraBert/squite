@@ -1,0 +1,10 @@
+[package]
+name = "squite"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = { version = "0.33.3", features = ["default"] }
+egui_extras = { version = "0.33.3", features = ["default", "image"] }
+rusqlite = { version = "0.38.0", features = ["serde_json"] }
+serde_json = "1.0.149"
