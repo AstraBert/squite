@@ -1,12 +1,10 @@
 mod dbops;
 
-use std::{
-    collections::HashMap,
-    sync::mpsc::{Receiver, Sender, channel},
-};
+use std::sync::mpsc::{Receiver, Sender, channel};
 
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
+use indexmap::IndexMap;
 use serde_json::Value;
 
 use crate::dbops::execute_sqlite_query;
@@ -14,20 +12,29 @@ use crate::dbops::execute_sqlite_query;
 struct SquiteApp {
     database_file: String,
     query: String,
-    query_result: Option<HashMap<String, Vec<Value>>>,
-    sx: Sender<HashMap<String, Vec<Value>>>,
-    rx: Receiver<HashMap<String, Vec<Value>>>,
+    query_result: Option<IndexMap<String, Vec<Value>>>,
+    error_message: Option<String>,
+    query_error: Option<String>,
+    sx: Sender<IndexMap<String, Vec<Value>>>,
+    rx: Receiver<IndexMap<String, Vec<Value>>>,
+    sx_error: Sender<String>,
+    rx_error: Receiver<String>,
     loading: bool,
 }
 
 impl Default for SquiteApp {
     fn default() -> Self {
         let (sx, rx) = channel();
+        let (sx_error, rx_error) = channel();
         Self {
             database_file: "".to_owned(),
             query: "".to_owned(),
+            error_message: None,
+            query_error: None,
             sx,
             rx,
+            sx_error,
+            rx_error,
             query_result: None,
             loading: false,
         }
@@ -40,82 +47,119 @@ impl eframe::App for SquiteApp {
             self.query_result = Some(result);
             self.loading = false;
         }
+        if let Ok(err) = self.rx_error.try_recv() {
+            self.query_error = Some(err);
+            self.loading = false;
+        }
+
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("SqUIte");
-            ui.hyperlink_to("GitHub Repository", "https://github.com/AstraBert/squite");
-            ui.add(
-                egui::Image::new(egui::include_image!("../assets/arxiv_cli.png"))
-                    .max_width(200.0)
-                    .corner_radius(10),
-            );
-            ui.horizontal(|ui| {
-                let file_db_label = ui.label("Database File Path (absolute): ");
-                ui.text_edit_singleline(&mut self.database_file)
-                    .labelled_by(file_db_label.id);
-            });
-            ui.vertical(|ui| {
-                let sqlite_query_label = ui.label("SQL Query:");
-                ui.text_edit_multiline(&mut self.query)
-                    .labelled_by(sqlite_query_label.id);
-            });
-            if ui.button("▶️ Run!").clicked() && !self.loading {
-                if self.database_file.is_empty() || self.query.is_empty() {
-                    ui.label("Both the database file path and the query should be non-empty");
-                } else {
-                    self.loading = true;
-                    self.query_result = None;
-                    let sx = self.sx.clone();
-                    let ctx = ctx.clone();
-                    let query = self.query.clone();
-                    let db_file = self.database_file.clone();
+            ui.vertical_centered(|ui| {
+                ui.heading("SqUIte");
+                ui.add_space(4.0);
+                ui.hyperlink_to("GitHub Repository", "https://github.com/AstraBert/squite");
+                ui.add_space(10.0);
+                ui.add(
+                    egui::Image::new(egui::include_image!("../assets/squite.png"))
+                        .max_width(350.0)
+                        .corner_radius(10),
+                );
+                ui.add_space(20.0);
+                ui.vertical_centered_justified(|ui| {
+                    let file_db_label = ui.strong("Database File Path (absolute): ");
+                    ui.add_space(4.0);
+                    ui.text_edit_singleline(&mut self.database_file)
+                        .labelled_by(file_db_label.id);
+                });
+                ui.add_space(10.0);
+                ui.vertical_centered_justified(|ui| {
+                    let sqlite_query_label = ui.strong("SQL Query:");
+                    ui.add_space(4.0);
+                    ui.text_edit_multiline(&mut self.query)
+                        .labelled_by(sqlite_query_label.id);
+                });
+                ui.add_space(4.0);
+                if ui.button("Run!").clicked() && !self.loading {
+                    self.query_error = None;
+                    self.error_message = None;
+                    if self.database_file.is_empty() || self.query.is_empty() {
+                        self.error_message = Some(
+                            "Both the database file path and the query should be non-empty"
+                                .to_string(),
+                        );
+                    } else {
+                        self.loading = true;
+                        self.query_result = None;
+                        let sx = self.sx.clone();
+                        let sx_err = self.sx_error.clone();
+                        let ctx = ctx.clone();
+                        let query = self.query.clone();
+                        let db_file = self.database_file.clone();
 
-                    std::thread::spawn(move || {
-                        // Simulate slow work
-                        let result = execute_sqlite_query(&query, &db_file).unwrap();
-
-                        sx.send(result).unwrap();
-                        ctx.request_repaint(); // wake up the UI when done
-                    });
-                }
-            }
-            if self.loading {
-                ui.spinner();
-                ctx.request_repaint();
-            }
-            if let Some(result) = &self.query_result {
-                let available_height = ui.available_height();
-                let mut table = TableBuilder::new(ui)
-                    .striped(true)
-                    .resizable(true)
-                    .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                    .sense(egui::Sense::click())
-                    .min_scrolled_height(0.0)
-                    .max_scroll_height(available_height);
-                let mut i = 0;
-                while i < result.len() {
-                    table = table.column(Column::auto());
-                    i += 1;
-                }
-                table
-                    .header(20.0, |mut header| {
-                        for column in result.keys() {
-                            header.col(|ui| {
-                                ui.strong(column);
-                            });
-                        }
-                    })
-                    .body(|mut body| {
-                        for (_, arr) in result.iter() {
-                            body.row(18.0, |mut row| {
-                                for val in arr {
-                                    row.col(|ui| {
-                                        ui.label(val.to_string());
-                                    });
+                        std::thread::spawn(move || {
+                            match execute_sqlite_query(&query, &db_file) {
+                                Ok(result) => {
+                                    sx.send(result).unwrap();
                                 }
-                            })
-                        }
-                    });
-            }
+                                Err(err) => {
+                                    sx_err.send(err.to_string()).unwrap();
+                                }
+                            }
+                            ctx.request_repaint(); // wake up the UI when done
+                        });
+                    }
+                }
+                if let Some(err) = &self.error_message {
+                    ui.add_space(10.0);
+                    ui.colored_label(egui::Color32::RED, err);
+                }
+                if let Some(query_err) = &self.query_error {
+                    ui.add_space(10.0);
+                    ui.colored_label(egui::Color32::RED, query_err);
+                }
+                if self.loading {
+                    ui.add_space(4.0);
+                    ui.spinner();
+                    ctx.request_repaint();
+                }
+                if let Some(result) = &self.query_result {
+                    ui.add_space(8.0);
+                    let available_height = ui.available_height();
+                    let mut table = TableBuilder::new(ui)
+                        .striped(true)
+                        .resizable(true)
+                        .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                        .sense(egui::Sense::click())
+                        .min_scrolled_height(0.0)
+                        .max_scroll_height(available_height);
+                    let mut i = 0;
+                    while i < result.len() {
+                        table = table.column(Column::remainder().at_least(20.0).clip(true));
+                        i += 1;
+                    }
+                    let num_rows = result.values().next().map(|v| v.len()).unwrap_or(0);
+                    let keys: Vec<&String> = result.keys().collect();
+                    table
+                        .header(20.0, |mut header| {
+                            for column in result.keys() {
+                                header.col(|ui| {
+                                    ui.strong(column);
+                                });
+                            }
+                        })
+                        .body(|mut body| {
+                            for row_idx in 0..num_rows {
+                                body.row(18.0, |mut row| {
+                                    for key in &keys {
+                                        row.col(|ui| {
+                                            let val = &result[*key][row_idx];
+                                            ui.label(val.to_string());
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                }
+            });
         });
     }
 }
