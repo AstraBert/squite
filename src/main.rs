@@ -2,7 +2,7 @@ mod dbops;
 
 use std::sync::mpsc::{Receiver, Sender, channel};
 
-use eframe::egui;
+use eframe::egui::{self, Color32, RichText};
 use egui_extras::{Column, TableBuilder};
 use indexmap::IndexMap;
 use serde_json::Value;
@@ -78,7 +78,11 @@ impl eframe::App for SquiteApp {
                         .labelled_by(sqlite_query_label.id);
                 });
                 ui.add_space(4.0);
-                if ui.button("Run!").clicked() && !self.loading {
+                if ui
+                    .button(RichText::new("Run!").color(Color32::LIGHT_GREEN))
+                    .clicked()
+                    && !self.loading
+                {
                     self.query_error = None;
                     self.error_message = None;
                     if self.database_file.is_empty() || self.query.is_empty() {
@@ -107,6 +111,14 @@ impl eframe::App for SquiteApp {
                             ctx.request_repaint(); // wake up the UI when done
                         });
                     }
+                }
+                if ui
+                    .button(RichText::new("Clear").color(Color32::LIGHT_RED))
+                    .clicked()
+                {
+                    self.query_result = None;
+                    self.query_error = None;
+                    self.error_message = None;
                 }
                 if let Some(err) = &self.error_message {
                     ui.add_space(10.0);
