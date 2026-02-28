@@ -2,6 +2,11 @@
 name = "squite"
 version = "0.1.0"
 edition = "2024"
+license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/AstraBert/squite"
+description = "A UI for SQLite databases, written in Rust"
+keywords = ["sqlite", "egui", "desktop-app", "ui"]
 
 [dependencies]
 eframe = { version = "0.33.3", features = ["default"] }
