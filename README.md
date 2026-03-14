@@ -28,7 +28,7 @@ The command will open a window like this:
 
 ![Initial Window](./assets/screenshot_1.png)
 
-And you can then SQL queries on file-based SQLite databases, an obtain a table of results:
+And you can then SQL queries on file-based SQLite databases, and obtain a table of results:
 
 ![Window with Results](./assets/screenshot_2.png)
 

@@ -42,6 +42,16 @@ pub fn execute_sqlite_query(query: &str, db_file: &str) -> Result<IndexMap<Strin
     Ok(table)
 }
 
+pub fn execute_sqlite_statement(query: &str, db_file: &str) -> Result<usize> {
+    if query.to_lowercase().starts_with("select") {
+        return Err(rusqlite::Error::ExecuteReturnedResults);
+    }
+    let conn = Connection::open(db_file)?;
+    let mut stmt = conn.prepare(query)?;
+    let result = stmt.execute([])?;
+    return Ok(result);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

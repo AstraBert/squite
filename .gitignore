@@ -1,3 +1,3 @@
 /target
-no_test.db
+no_test*.db
 .env
