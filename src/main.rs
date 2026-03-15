@@ -7,25 +7,30 @@ use egui_extras::{Column, TableBuilder};
 use indexmap::IndexMap;
 use serde_json::Value;
 
-use crate::dbops::execute_sqlite_query;
+use crate::dbops::{execute_sqlite_query, execute_sqlite_statement};
 
 struct SquiteApp {
     database_file: String,
     query: String,
     query_result: Option<IndexMap<String, Vec<Value>>>,
+    execution_result: Option<usize>,
     error_message: Option<String>,
     query_error: Option<String>,
     sx: Sender<IndexMap<String, Vec<Value>>>,
     rx: Receiver<IndexMap<String, Vec<Value>>>,
     sx_error: Sender<String>,
     rx_error: Receiver<String>,
+    sx_exec: Sender<usize>,
+    rx_exec: Receiver<usize>,
     loading: bool,
+    allow_modifications: bool,
 }
 
 impl Default for SquiteApp {
     fn default() -> Self {
         let (sx, rx) = channel();
         let (sx_error, rx_error) = channel();
+        let (sx_exec, rx_exec) = channel();
         Self {
             database_file: "".to_owned(),
             query: "".to_owned(),
@@ -35,8 +40,12 @@ impl Default for SquiteApp {
             rx,
             sx_error,
             rx_error,
+            sx_exec,
+            rx_exec,
             query_result: None,
+            execution_result: None,
             loading: false,
+            allow_modifications: false,
         }
     }
 }
@@ -45,6 +54,10 @@ impl eframe::App for SquiteApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if let Ok(result) = self.rx.try_recv() {
             self.query_result = Some(result);
+            self.loading = false;
+        }
+        if let Ok(rows_count) = self.rx_exec.try_recv() {
+            self.execution_result = Some(rows_count);
             self.loading = false;
         }
         if let Ok(err) = self.rx_error.try_recv() {
@@ -78,6 +91,8 @@ impl eframe::App for SquiteApp {
                         .labelled_by(sqlite_query_label.id);
                 });
                 ui.add_space(4.0);
+                ui.checkbox(&mut self.allow_modifications, "This query modifies data")
+                    .on_hover_text("Check if you want to run INSERT, UPDATE, DELETE or other statements that modify the database");
                 if ui
                     .button(RichText::new("Run!").color(Color32::LIGHT_GREEN))
                     .clicked()
@@ -93,23 +108,51 @@ impl eframe::App for SquiteApp {
                     } else {
                         self.loading = true;
                         self.query_result = None;
+                        self.execution_result = None;
                         let sx = self.sx.clone();
+                        let sx_exec = self.sx_exec.clone();
                         let sx_err = self.sx_error.clone();
                         let ctx = ctx.clone();
                         let query = self.query.clone();
                         let db_file = self.database_file.clone();
 
-                        std::thread::spawn(move || {
-                            match execute_sqlite_query(&query, &db_file) {
-                                Ok(result) => {
-                                    sx.send(result).unwrap();
+
+                        if !self.allow_modifications {
+                            std::thread::spawn(move || {
+                                match execute_sqlite_query(&query, &db_file) {
+                                    Ok(result) => {
+                                        sx.send(result).unwrap();
+                                    }
+                                    Err(err) => {
+                                        sx_err.send(err.to_string()).unwrap();
+                                    }
                                 }
-                                Err(err) => {
-                                    sx_err.send(err.to_string()).unwrap();
+                                ctx.request_repaint(); // wake up the UI when done
+                            });
+                        } else {
+                            std::thread::spawn(move || {
+                                match execute_sqlite_statement(&query, &db_file) {
+                                    Ok(result) => {
+                                        sx_exec.send(result).unwrap();
+                                    }
+                                    Err(err) => {
+                                        match err {
+                                            rusqlite::Error::ExecuteReturnedResults => {
+                                                if query.to_lowercase().starts_with("select") {
+                                                    sx_err.send("You cannot execute a SELECT statement with the data modification checkbox checked.".to_string()).unwrap();
+                                                } else {
+                                                    sx_err.send(err.to_string()).unwrap();
+                                                }
+                                            },
+                                            _ => {
+                                                sx_err.send(err.to_string()).unwrap();
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            ctx.request_repaint(); // wake up the UI when done
-                        });
+                                ctx.request_repaint(); // wake up the UI when done
+                            });
+                        }
                     }
                 }
                 if ui
@@ -119,6 +162,7 @@ impl eframe::App for SquiteApp {
                     self.query_result = None;
                     self.query_error = None;
                     self.error_message = None;
+                    self.execution_result = None;
                 }
                 if let Some(err) = &self.error_message {
                     ui.add_space(10.0);
@@ -132,6 +176,10 @@ impl eframe::App for SquiteApp {
                     ui.add_space(4.0);
                     ui.spinner();
                     ctx.request_repaint();
+                }
+                if let Some(exec_result) = &self.execution_result {
+                    ui.add_space(8.0);
+                    ui.colored_label(egui::Color32::LIGHT_GREEN, format!("Success. {:?} row(s) affected.", exec_result));
                 }
                 if let Some(result) = &self.query_result {
                     ui.add_space(8.0);

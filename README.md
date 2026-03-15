@@ -28,11 +28,17 @@ The command will open a window like this:
 
 ![Initial Window](./assets/screenshot_1.png)
 
-And you can then SQL queries on file-based SQLite databases, an obtain a table of results:
+You can then run SQL `SELECT` statements on file-based SQLite databases, and obtain a table of results:
 
 ![Window with Results](./assets/screenshot_2.png)
 
-> There is one limitation: **you can only run `SELECT` statements**. This limitation might be lifted with new releases.
+Or you can run statements that modify data (such ass `INSERT`, `UPDATE` or `DELETE`), and get the number of affected rows:
+
+![Window with Affected Rows](./assets/screenshot_3.png)
+
+Note that statements that modify data require you to check the *"This query modifies data"* checkbox, to acknowledge that you are performing a potentially destructive or irreversible operation. If the checkbox is left unchecked, the operation will be rejected.
+
+![Window with Rejected Query](./assets/screenshot_4.png)
 
 ## Contributing
 
