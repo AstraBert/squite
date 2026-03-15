@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SqUIte — A UI for SQLite databases, written in Rust</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <!-- Nav -->
+        <nav>
+            <a class="nav-logo" href="#">
+                <!-- Inline SVG approximating the logo mark (red rounded square + feather/glasses) -->
+                <img src="logo.png" width="100" height="75" alt="SqUIte logo" />
+                SqUIte
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#install">Install</a></li>
+                <li>
+                    <a
+                        href="https://github.com/AstraBert/squite"
+                        target="_blank"
+                        >GitHub</a
+                    >
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-inner">
+                <p class="hero-eyebrow">v0.2.0</p>
+                <h1>Your SQLite<br />database, <em>visually.</em></h1>
+                <p class="hero-sub">
+                    SqUIte is a lightweight, cross-platform desktop application
+                    for browsing, querying, and editing SQLite databases — built
+                    with Rust and egui for native performance on every OS.
+                </p>
+
+                <div class="download-group">
+                    <!-- macOS button -->
+                    <a
+                        class="btn btn-primary"
+                        href="https://github.com/AstraBert/squite/releases/download/v0.2.0/squite.zip"
+                        download
+                    >
+                        <svg
+                            class="btn-icon"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"
+                            />
+                        </svg>
+                        <span class="btn-text-group">
+                            <span class="btn-label-small">Download for</span>
+                            <span class="btn-label-main">macOS (AMD64)</span>
+                        </span>
+                    </a>
+
+                    <!-- Linux button -->
+                    <a
+                        class="btn btn-secondary"
+                        href="https://github.com/AstraBert/squite/releases/download/v0.2.0/squite_0.2.0_amd64.deb"
+                        download
+                    >
+                        <svg
+                            class="btn-icon"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587.671 1.237.981 1.8.908.524-.067.98-.417 1.22-.816.535.563 1.041.809 1.627.737.686-.095 1.032-.602 1.428-1.833l.022-.06c.368-1.177.042-4.255-.136-5.613-.056-.431-.1-.83.014-1.133.131-.31.49-.598.8-.942.31-.345.568-.75.702-1.27l.015-.061c.123-.61.01-1.065-.282-1.346-.403-.388-1.031-.225-1.31-.15-.19.05-.336.085-.432.043-.02-.026-.064-.126-.08-.176C16.84.728 15.742 0 12.504 0zm.016 1.208c2.375 0 3.067.57 3.516 1.39.07.134.107.294.082.424-.158.843-1.062.93-2.033.88l-.143-.007.178.032c.75.13 1.43.414 1.845 1.043.295.45.453 1.02.46 1.784-.005.82-.21 1.727-.495 2.73-.318 1.135-.675 2.22-.72 3.318-.04 1.02.231 2.053.74 3.104.044.09.087.192.13.3.2.523.28 1.023.087 1.374-.14.25-.45.37-.8.37-.287 0-.598-.09-.866-.26l-.1-.063c-.12-.079-.243-.18-.352-.28a6.63 6.63 0 01-.538-.566l-.178-.215c-.156-.189-.342-.446-.545-.62-.172-.145-.37-.24-.595-.24-.213 0-.41.088-.58.22-.25.189-.436.43-.613.63-.25.278-.505.51-.8.608-.296.1-.624.076-.995-.154l-.08-.05c-.257-.175-.53-.47-.82-.823l-.185-.234-.076-.095-.1-.12c-.19-.23-.373-.44-.553-.606-.17-.158-.35-.27-.555-.27-.207 0-.404.102-.57.264-.26.25-.43.584-.597.92-.163.333-.325.665-.528.875-.2.206-.418.28-.676.226-.29-.06-.591-.285-.878-.644l-.04-.05c-.31-.41-.6-.928-.84-1.574-.24-.643-.416-1.4-.402-2.305.015-.907.203-1.96.674-3.162.48-1.212 1.232-2.56 2.33-4.077.82-1.13 1.26-2.5 1.38-3.713.048-.503-.003-.958-.13-1.26C9.47 1.58 10.28 1.208 12.52 1.208z"
+                            />
+                        </svg>
+                        <span class="btn-text-group">
+                            <span class="btn-label-small">Download for</span>
+                            <span class="btn-label-main">Ubuntu / Debian</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features" id="features">
+            <h2 class="section-title">See what SqUIte does for yourself👀</h2>
+            <div>
+                <iframe
+                    src="https://drive.google.com/file/d/1rbm2M2S5gzvFpkgWI0FK9VCFhZ67uAPJ/preview"
+                    width="640"
+                    height="480"
+                ></iframe>
+            </div>
+        </section>
+
+        <!-- Install instructions -->
+        <section class="install" id="install">
+            <h2 class="section-title">Download and Get Started!</h2>
+            <p class="install-sub">
+                Download the package for your platform above, then follow the
+                one-step install below.
+            </p>
+
+            <div class="code-block">
+                <span class="comment"
+                    ># macOS — unzip and move to Applications</span
+                ><br />
+                <span class="cmd">unzip squite.zip -d /Applications</span>
+            </div>
+
+            <div class="code-block">
+                <span class="comment"
+                    ># Ubuntu / Debian — install the .deb package</span
+                ><br />
+                <span class="cmd">sudo dpkg -i squite_0.2.0_amd64.deb</span>
+            </div>
+
+            <p
+                style="
+                    margin-top: 1.5rem;
+                    font-size: 0.82rem;
+                    color: var(--text-muted);
+                    font-family: &quot;DM Mono&quot;, monospace;
+                "
+            >
+                macOS users: on first launch, right-click → Open to bypass
+                Gatekeeper.
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <span class="footer-logo">SqUIte</span>
+            <ul class="footer-links">
+                <li>
+                    <a
+                        href="https://github.com/AstraBert/squite"
+                        target="_blank"
+                        >GitHub</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="https://github.com/AstraBert/squite/releases"
+                        target="_blank"
+                        >Releases</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="https://github.com/AstraBert/squite/issues"
+                        target="_blank"
+                        >Issues</a
+                    >
+                </li>
+            </ul>
+            <p class="footer-copy">
+                © 2026 Clelia Astra Bertelli · MIT License · Built with Love and
+                Rust🦀
+            </p>
+        </footer>
+    </body>
+</html>
