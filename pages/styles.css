@@ -219,8 +219,8 @@ h1 em {
 }
 
 .btn-icon {
-    width: 22px;
-    height: 22px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
 }
 
@@ -260,11 +260,60 @@ h1 em {
 }
 
 /* ── Features ── */
-.features {
-    background: var(--cream-warm);
+.demo {
     padding: 6rem 3rem;
+    background: var(--cream);
     border-top: 1px solid var(--parchment);
-    border-bottom: 1px solid var(--parchment);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.demo .section-title {
+    margin-bottom: 0;
+}
+
+.demo-video {
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow:
+        0 20px 60px rgba(74, 28, 14, 0.18),
+        0 4px 16px rgba(74, 28, 14, 0.1);
+    border: 1px solid var(--parchment);
+    background: var(--brown);
+    /* Fake a little title bar for polish */
+    padding-top: 2rem;
+}
+
+.demo-video::before {
+    content: "● ● ●";
+    position: absolute;
+    top: 0.55rem;
+    left: 1rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.35em;
+    color: rgba(255, 255, 255, 0.25);
+    pointer-events: none;
+}
+
+.demo-video iframe {
+    display: block;
+    width: 100%;
+    height: 440px;
+    border: none;
+}
+
+@media (max-width: 640px) {
+    .demo {
+        padding: 4rem 1.5rem;
+    }
+    .demo-video iframe {
+        height: 240px;
+    }
 }
 
 .section-label {
@@ -284,60 +333,6 @@ h1 em {
     color: var(--brown);
     text-align: center;
     margin-bottom: 3.5rem;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 2rem;
-    max-width: 960px;
-    margin: 0 auto;
-}
-
-.feature-card {
-    background: var(--cream);
-    border: 1px solid var(--parchment);
-    border-radius: 6px;
-    padding: 2rem;
-    position: relative;
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-}
-
-.feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(74, 28, 14, 0.1);
-}
-
-.feature-num {
-    font-family: "Playfair Display", serif;
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: var(--parchment);
-    line-height: 1;
-    position: absolute;
-    top: 1.2rem;
-    right: 1.4rem;
-}
-
-.feature-icon {
-    font-size: 1.6rem;
-    margin-bottom: 1rem;
-}
-
-.feature-title {
-    font-family: "Playfair Display", serif;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--brown);
-    margin-bottom: 0.6rem;
-}
-
-.feature-desc {
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: var(--text-muted);
 }
 
 /* ── Install section ── */
