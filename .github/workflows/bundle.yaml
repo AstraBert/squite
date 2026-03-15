@@ -2,6 +2,10 @@ name: CI - Bundle
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.2.3)"
+        required: true
 
 env:
   CARGO_TERM_COLOR: always
@@ -86,5 +90,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.tag }}
           files: artifacts/**
           generate_release_notes: true
