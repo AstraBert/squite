@@ -8,7 +8,7 @@
 
 It is built on top of [`rusqlite`](https://github.com/rusqlite/rusqlite) and [`egui`](https://github.com/emilk/egui).
 
-## Installation And Usage
+## Installation
 
 Install with Cargo:
 
@@ -16,15 +16,19 @@ Install with Cargo:
 cargo install squite
 ```
 
-> In the near future, there will be a website where you will be able to download pre-compiled application binaries!
+Or download the app (for MacOS and Ubuntu/Debian, AMD64 only) from the [website](https://squite.de).
 
-You can then run with:
+## Usage
+
+If you installed with Cargo, you can run with:
 
 ```bash
 squite
 ```
 
-The command will open a window like this:
+Otherwise you can simply double-click on the app icon.
+
+The app will open to a window like this:
 
 ![Initial Window](./assets/screenshot_1.png)
 
