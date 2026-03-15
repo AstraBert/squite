@@ -49,7 +49,7 @@ pub fn execute_sqlite_statement(query: &str, db_file: &str) -> Result<usize> {
     let conn = Connection::open(db_file)?;
     let mut stmt = conn.prepare(query)?;
     let result = stmt.execute([])?;
-    return Ok(result);
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -101,5 +101,58 @@ mod tests {
             "testfiles/test.db",
         ); // this fails as an invalid query
         assert!(result.is_err_and(|e| e == rusqlite::Error::InvalidQuery));
+    }
+
+    #[test]
+    fn test_execute_sqlite_statement_success() {
+        let result_update = execute_sqlite_statement(
+            "UPDATE updates SET message = 'test message'  WHERE user = 'alice';",
+            "testfiles/modifications/modify.db",
+        );
+        assert_eq!(result_update.is_ok_and(|u| u == 1), true); // one row affected
+        let result_delete =
+            execute_sqlite_statement("DELETE FROM updates;", "testfiles/modifications/modify.db");
+        assert_eq!(result_delete.is_ok_and(|u| u == 3), true); // three rows affected
+        let insert_statement = r#"INSERT INTO updates (user, message) VALUES
+            ('alice', 'Updated to v0.1.0 on 03/14/2026'),
+            ('bob', 'Updated to v0.1.0 on 02/28/2026'),
+            ('carol', 'Updated to v0.1.0 on 02/26/2026');
+        "#;
+        let result_insert =
+            execute_sqlite_statement(insert_statement, "testfiles/modifications/modify.db");
+        assert_eq!(result_insert.is_ok_and(|u| u == 3), true);
+    }
+
+    #[test]
+    fn test_execute_sqlite_statement_no_rows_affected() {
+        let result_update = execute_sqlite_statement(
+            "UPDATE updates SET message = 'test message'  WHERE user = 'notauser';",
+            "testfiles/modifications/modify.db",
+        );
+        assert_eq!(result_update.is_ok_and(|u| u == 0), true);
+    }
+
+    #[test]
+    fn test_execute_sqlite_statement_error_on_select() {
+        let result = execute_sqlite_statement(
+            "SELECT * FROM updates;",
+            "testfiles/modifications/modify.db",
+        );
+        assert_eq!(
+            result.is_err_and(|e| e == rusqlite::Error::ExecuteReturnedResults),
+            true
+        );
+    }
+
+    #[test]
+    fn test_execute_sqlite_statement_table_not_exist() {
+        let result = execute_sqlite_statement(
+            "UPDATE test SET message = 'hello' WHERE user = 'bye';",
+            "testfiles/modifications/modify.db",
+        );
+        assert_eq!(
+            result.is_err_and(|e| e.to_string() == "no such table: test".to_string()),
+            true
+        );
     }
 }
