@@ -12,8 +12,13 @@ keywords = ["sqlite", "egui", "desktop-app", "ui"]
 eframe = { version = "0.33.3", features = ["default"] }
 egui_extras = { version = "0.33.3", features = ["default", "image"] }
 indexmap = "2.13.0"
-rusqlite = { version = "0.38.0", features = ["serde_json"] }
 serde_json = "1.0.149"
+
+[target.'cfg(windows)'.dependencies]
+rusqlite = { version = "0.38.0", features = ["serde_json", "bundled"] }
+
+[target.'cfg(not(windows))'.dependencies]
+rusqlite = { version = "0.38.0", features = ["serde_json"] }
 
 [package.metadata.bundle]
 name = "squite"
