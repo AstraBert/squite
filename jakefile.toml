@@ -1,4 +1,4 @@
-build = "cargo build --target-dir target/"
+build = "cargo build"
 test = "cargo test"
 clippy-fix = "cargo clippy --fix --bin squite"
 clippy = "cargo clippy"
