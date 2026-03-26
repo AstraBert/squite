@@ -1,10 +1,12 @@
 mod dbops;
 
+use std::path::Path;
 use std::sync::mpsc::{Receiver, Sender, channel};
 
 use eframe::egui::{self, Color32, RichText};
 use egui_extras::{Column, TableBuilder};
 use indexmap::IndexMap;
+use rfd::FileDialog;
 use serde_json::Value;
 
 use crate::dbops::{execute_sqlite_query, execute_sqlite_statement};
@@ -50,6 +52,26 @@ impl Default for SquiteApp {
     }
 }
 
+fn pick_database_file(current_path: &str) -> Option<String> {
+    let current_path = Path::new(current_path);
+    let mut dialog = FileDialog::new().set_title("Select SQLite database");
+
+    if current_path.is_file() {
+        if let Some(parent) = current_path.parent() {
+            dialog = dialog.set_directory(parent);
+        }
+        if let Some(file_name) = current_path.file_name().and_then(|name| name.to_str()) {
+            dialog = dialog.set_file_name(file_name);
+        }
+    } else if current_path.is_dir() {
+        dialog = dialog.set_directory(current_path);
+    }
+
+    dialog
+        .pick_file()
+        .map(|path| path.as_path().display().to_string())
+}
+
 impl eframe::App for SquiteApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if let Ok(result) = self.rx.try_recv() {
@@ -80,8 +102,21 @@ impl eframe::App for SquiteApp {
                 ui.vertical_centered_justified(|ui| {
                     let file_db_label = ui.strong("Database File Path (absolute): ");
                     ui.add_space(4.0);
-                    ui.text_edit_singleline(&mut self.database_file)
-                        .labelled_by(file_db_label.id);
+                    ui.horizontal(|ui| {
+                        let response = ui.add_sized(
+                            [(ui.available_width() - 90.0).max(160.0), 0.0],
+                            egui::TextEdit::singleline(&mut self.database_file),
+                        );
+                        response.labelled_by(file_db_label.id);
+
+                        if ui.button("Browse...").clicked() {
+                            if let Some(path) = pick_database_file(&self.database_file) {
+                                self.database_file = path;
+                                self.error_message = None;
+                                self.query_error = None;
+                            }
+                        }
+                    });
                 });
                 ui.add_space(10.0);
                 ui.vertical_centered_justified(|ui| {
@@ -115,7 +150,6 @@ impl eframe::App for SquiteApp {
                         let ctx = ctx.clone();
                         let query = self.query.clone();
                         let db_file = self.database_file.clone();
-
 
                         if !self.allow_modifications {
                             std::thread::spawn(move || {

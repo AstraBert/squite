@@ -12,6 +12,7 @@ keywords = ["sqlite", "egui", "desktop-app", "ui"]
 eframe = { version = "0.33.3", features = ["default"] }
 egui_extras = { version = "0.33.3", features = ["default", "image"] }
 indexmap = "2.13.0"
+rfd = "0.15.4"
 serde_json = "1.0.149"
 
 [target.'cfg(windows)'.dependencies]
